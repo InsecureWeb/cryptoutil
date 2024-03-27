@@ -25,45 +25,45 @@ func setKey(key []byte) (cipher.Block, []byte, error) {
 	return block, salt[:SaltLength], nil
 }
 
-func AESEncrypt(src string, key []byte) (string, error) {
+func Encrypt(src string, key string) (string, error) {
 	if len(src) == 0 {
 		return "", &InvalidEncryptedDataError{"Invalid crypto"}
 	}
-	blkEncrypt, ivEncrypt, err := setKey(key)
+	blkEncrypt, ivEncrypt, err := setKey([]byte(key))
 	if err != nil {
 		return "", &InvalidAESKeyError{"Invalid crypto"}
 	}
 	ecb := cipher.NewCBCEncrypter(blkEncrypt, ivEncrypt)
 	content := []byte(src)
-	content = PKCS5Padding(content, blkEncrypt.BlockSize())
-	crypted := make([]byte, len(content))
-	ecb.CryptBlocks(crypted, content)
-	base64 := b64.StdEncoding.EncodeToString(crypted)
+	content = pkcs5Padding(content, blkEncrypt.BlockSize())
+	encrypted := make([]byte, len(content))
+	ecb.CryptBlocks(encrypted, content)
+	base64 := b64.StdEncoding.EncodeToString(encrypted)
 	return base64, nil
 }
 
-func AESDecrypt(crypt string, key []byte) (string, error) {
+func Decrypt(crypt string, key string) (string, error) {
 	encryptedData, _ := b64.StdEncoding.DecodeString(crypt)
 	if len(crypt) == 0 {
 		return "", &InvalidPassphraseError{"Invalid crypto"}
 	}
-	blk, iv, err := setKey(key)
+	blk, iv, err := setKey([]byte(key))
 	if err != nil {
 		return "", &InvalidAESKeyError{"Invalid crypto"}
 	}
 	ecb := cipher.NewCBCDecrypter(blk, iv)
 	decrypted := make([]byte, len(encryptedData))
 	ecb.CryptBlocks(decrypted, encryptedData)
-	return string(PKCS5Trimming(decrypted)), nil
+	return string(pkcs5Trimming(decrypted)), nil
 }
 
-func PKCS5Padding(ciphertext []byte, blockSize int) []byte {
+func pkcs5Padding(ciphertext []byte, blockSize int) []byte {
 	padding := blockSize - len(ciphertext)%blockSize
-	padtext := bytes.Repeat([]byte{byte(padding)}, padding)
-	return append(ciphertext, padtext...)
+	padded := bytes.Repeat([]byte{byte(padding)}, padding)
+	return append(ciphertext, padded...)
 }
 
-func PKCS5Trimming(encrypt []byte) []byte {
+func pkcs5Trimming(encrypt []byte) []byte {
 	padding := encrypt[len(encrypt)-1]
 	return encrypt[:len(encrypt)-int(padding)]
 }
