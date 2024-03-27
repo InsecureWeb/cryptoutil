@@ -1,4 +1,4 @@
-package AtlasInsideAES
+package aes
 
 type InvalidPassphraseError struct {
 	Msg string

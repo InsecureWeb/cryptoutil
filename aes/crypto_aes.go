@@ -1,11 +1,11 @@
-package AtlasInsideAES
+package aes
 
 import (
 	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/sha1"
-	b64 "encoding/base64"
+	"encoding/base64"
 	"golang.org/x/crypto/pbkdf2"
 )
 
@@ -38,12 +38,12 @@ func Encrypt(src string, key string) (string, error) {
 	content = pkcs5Padding(content, blkEncrypt.BlockSize())
 	encrypted := make([]byte, len(content))
 	ecb.CryptBlocks(encrypted, content)
-	base64 := b64.StdEncoding.EncodeToString(encrypted)
-	return base64, nil
+	b64 := base64.StdEncoding.EncodeToString(encrypted)
+	return b64, nil
 }
 
 func Decrypt(crypt string, key string) (string, error) {
-	encryptedData, _ := b64.StdEncoding.DecodeString(crypt)
+	encryptedData, _ := base64.StdEncoding.DecodeString(crypt)
 	if len(crypt) == 0 {
 		return "", &InvalidPassphraseError{"Invalid crypto"}
 	}
